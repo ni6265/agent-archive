@@ -1,0 +1,1775 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="theme-color" content="#070a11">
+<meta name="description" content="记录我用过哪些 Agent、用来做什么、取得了哪些效果的个人档案。">
+<title>Agent 档案 · 我的 AI 实践记录</title>
+<style>
+  :root{
+    --bg:#070a11;
+    --surface:#0d131d;
+    --surface-2:#121a27;
+    --line:rgba(148,163,184,.14);
+    --line-strong:rgba(148,163,184,.24);
+    --text:#e9eefb;
+    --muted:#8a97ad;
+    --muted-2:#64718a;
+    --accent:#7c8cff;
+    --accent-2:#5eead4;
+    --radius:20px;
+    --shadow:0 24px 60px rgba(2,6,15,.55);
+    color-scheme:dark;
+  }
+
+  *{box-sizing:border-box}
+
+  html{scroll-behavior:smooth}
+
+  body{
+    margin:0;
+    min-height:100vh;
+    background:
+      radial-gradient(1100px 620px at 12% -8%, rgba(124,140,255,.16), transparent 62%),
+      radial-gradient(900px 520px at 96% 4%, rgba(94,234,212,.10), transparent 58%),
+      var(--bg);
+    background-attachment:fixed;
+    color:var(--text);
+    font-family:"Inter","PingFang SC","Microsoft YaHei","Segoe UI",system-ui,-apple-system,sans-serif;
+    -webkit-font-smoothing:antialiased;
+    text-rendering:optimizeLegibility;
+  }
+
+  body::before{
+    content:"";
+    position:fixed;
+    inset:0;
+    background-image:
+      linear-gradient(rgba(148,163,184,.045) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(148,163,184,.045) 1px, transparent 1px);
+    background-size:64px 64px;
+    -webkit-mask-image:radial-gradient(ellipse 85% 60% at 50% 0%, #000 25%, transparent 78%);
+    mask-image:radial-gradient(ellipse 85% 60% at 50% 0%, #000 25%, transparent 78%);
+    pointer-events:none;
+    z-index:0;
+  }
+
+  a{color:inherit}
+  button{font-family:inherit}
+
+  .container{
+    position:relative;
+    z-index:1;
+    width:min(1160px, calc(100% - 48px));
+    margin:0 auto;
+  }
+
+  /* ---------- Navigation ---------- */
+  .nav{
+    position:sticky;
+    top:0;
+    z-index:50;
+    background:rgba(7,10,17,.72);
+    backdrop-filter:blur(18px) saturate(140%);
+    -webkit-backdrop-filter:blur(18px) saturate(140%);
+    border-bottom:1px solid var(--line);
+  }
+
+  .nav-inner{
+    height:68px;
+    display:flex;
+    align-items:center;
+    gap:28px;
+  }
+
+  .brand{
+    display:inline-flex;
+    align-items:center;
+    gap:10px;
+    text-decoration:none;
+    flex:none;
+  }
+
+  .brand-mark{
+    width:31px;
+    height:31px;
+    border-radius:9px;
+    display:grid;
+    place-items:center;
+    font-weight:800;
+    font-size:14px;
+    color:#08101c;
+    background:linear-gradient(135deg,#a5b4fc,#5eead4);
+    box-shadow:0 6px 18px rgba(124,140,255,.25);
+  }
+
+  .brand-text{
+    font-size:14.5px;
+    font-weight:650;
+    letter-spacing:.02em;
+  }
+
+  .nav-links{
+    display:flex;
+    align-items:center;
+    gap:24px;
+  }
+
+  .nav-links a{
+    color:var(--muted);
+    text-decoration:none;
+    font-size:13.5px;
+    transition:color .2s;
+  }
+
+  .nav-links a:hover{color:var(--text)}
+
+  .nav-actions{
+    margin-left:auto;
+    display:flex;
+    align-items:center;
+    gap:8px;
+  }
+
+  /* ---------- Buttons ---------- */
+  .btn{
+    display:inline-flex;
+    align-items:center;
+    justify-content:center;
+    gap:8px;
+    padding:11px 18px;
+    border-radius:12px;
+    border:1px solid var(--line-strong);
+    background:rgba(255,255,255,.03);
+    color:var(--text);
+    font-size:13.5px;
+    font-weight:600;
+    cursor:pointer;
+    text-decoration:none;
+    transition:transform .2s ease, background .2s ease, border-color .2s ease, box-shadow .2s ease;
+  }
+
+  .btn:hover{
+    background:rgba(255,255,255,.06);
+    border-color:rgba(148,163,184,.38);
+  }
+
+  .btn svg{width:15px;height:15px;flex:none}
+
+  .btn-primary{
+    background:linear-gradient(135deg,#8b9bff,#a78bfa 60%,#5eead4 130%);
+    border-color:rgba(255,255,255,.14);
+    color:#0a0f1c;
+    box-shadow:0 10px 30px rgba(124,140,255,.28);
+  }
+
+  .btn-primary:hover{
+    transform:translateY(-1px);
+    background:linear-gradient(135deg,#9ba9ff,#b39dff 60%,#6ff1df 130%);
+    box-shadow:0 14px 36px rgba(124,140,255,.36);
+  }
+
+  .btn-ghost{background:rgba(255,255,255,.02)}
+
+  .btn-sm{
+    padding:8px 12px;
+    font-size:12.5px;
+    border-radius:10px;
+  }
+
+  .btn-sm svg{width:14px;height:14px}
+
+  .icon-btn{
+    width:32px;
+    height:32px;
+    display:inline-flex;
+    align-items:center;
+    justify-content:center;
+    border-radius:9px;
+    border:1px solid var(--line);
+    background:rgba(255,255,255,.02);
+    color:var(--muted);
+    cursor:pointer;
+    text-decoration:none;
+    transition:background .2s, color .2s, border-color .2s;
+    flex:none;
+  }
+
+  .icon-btn:hover{
+    background:rgba(255,255,255,.07);
+    border-color:var(--line-strong);
+    color:var(--text);
+  }
+
+  .icon-btn.danger:hover{
+    color:#ff9db1;
+    border-color:rgba(255,157,177,.35);
+    background:rgba(255,157,177,.08);
+  }
+
+  .icon-btn svg{width:15px;height:15px}
+
+  /* ---------- Hero ---------- */
+  .hero{
+    display:grid;
+    grid-template-columns:1.12fr .88fr;
+    align-items:center;
+    gap:56px;
+    padding:86px 0 56px;
+  }
+
+  .hero-copy{animation:rise .7s cubic-bezier(.2,.7,.3,1) both}
+
+  .eyebrow{
+    display:inline-flex;
+    align-items:center;
+    gap:8px;
+    margin-bottom:22px;
+    font-size:11px;
+    font-weight:500;
+    letter-spacing:.18em;
+    text-transform:uppercase;
+    color:#a5b4fc;
+  }
+
+  .eyebrow::before{
+    content:"";
+    width:6px;
+    height:6px;
+    border-radius:50%;
+    background:var(--accent-2);
+    box-shadow:0 0 10px var(--accent-2);
+  }
+
+  .hero h1{
+    margin:0 0 20px;
+    font-size:clamp(2.4rem, 4.6vw, 3.85rem);
+    line-height:1.12;
+    letter-spacing:-.035em;
+    font-weight:700;
+  }
+
+  .grad{
+    background:linear-gradient(115deg,#c7d2fe,#8b9bff 38%,#5eead4 78%);
+    -webkit-background-clip:text;
+    background-clip:text;
+    color:transparent;
+  }
+
+  .hero-copy p{
+    margin:0;
+    max-width:540px;
+    color:var(--muted);
+    font-size:15.5px;
+    line-height:1.8;
+  }
+
+  .hero-actions{
+    display:flex;
+    flex-wrap:wrap;
+    gap:12px;
+    margin-top:32px;
+  }
+
+  .hero-panel{
+    position:relative;
+    padding:22px;
+    border-radius:24px;
+    border:1px solid var(--line);
+    background:linear-gradient(180deg, rgba(18,26,39,.92), rgba(10,15,24,.88));
+    box-shadow:var(--shadow);
+    overflow:hidden;
+    animation:rise .7s .08s cubic-bezier(.2,.7,.3,1) both;
+  }
+
+  .hero-panel::before{
+    content:"";
+    position:absolute;
+    inset:0 0 auto;
+    height:1px;
+    background:linear-gradient(90deg,transparent,rgba(124,140,255,.85),transparent);
+    z-index:0;
+  }
+
+  .hero-panel::after{
+    content:"";
+    position:absolute;
+    top:-110px;
+    right:-70px;
+    width:240px;
+    height:240px;
+    border-radius:50%;
+    background:radial-gradient(circle, rgba(124,140,255,.22), transparent 70%);
+    pointer-events:none;
+    z-index:0;
+  }
+
+  .hero-panel > *{position:relative;z-index:1}
+
+  .panel-head{
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+    margin-bottom:6px;
+  }
+
+  .panel-title{
+    font-size:11.5px;
+    letter-spacing:.14em;
+    text-transform:uppercase;
+    color:var(--muted);
+  }
+
+  .panel-badge{
+    font-size:11px;
+    color:#a5b4fc;
+    background:rgba(124,140,255,.12);
+    border:1px solid rgba(124,140,255,.22);
+    padding:2px 9px;
+    border-radius:999px;
+  }
+
+  .recent-item{
+    display:flex;
+    align-items:center;
+    gap:12px;
+    padding:12px 0;
+    border-bottom:1px dashed rgba(148,163,184,.12);
+  }
+
+  .recent-item:last-of-type{border-bottom:none}
+
+  .recent-avatar{
+    width:32px;
+    height:32px;
+    border-radius:10px;
+    display:grid;
+    place-items:center;
+    font-size:12px;
+    font-weight:700;
+    color:#0a1018;
+    background:linear-gradient(135deg,var(--a,#a5b4fc),var(--b,#5eead4));
+    flex:none;
+  }
+
+  .recent-info{min-width:0;flex:1}
+
+  .recent-name{
+    font-size:13.5px;
+    font-weight:600;
+    white-space:nowrap;
+    overflow:hidden;
+    text-overflow:ellipsis;
+  }
+
+  .recent-meta{
+    margin-top:2px;
+    font-size:11.5px;
+    color:var(--muted-2);
+    white-space:nowrap;
+    overflow:hidden;
+    text-overflow:ellipsis;
+  }
+
+  .dot{
+    width:7px;
+    height:7px;
+    border-radius:50%;
+    flex:none;
+  }
+
+  .dot.on{background:#5eead4;box-shadow:0 0 8px rgba(94,234,212,.7)}
+  .dot.sometimes{background:#fbbf24}
+  .dot.off{background:#64748b}
+
+  .recent-empty{
+    padding:18px 0 8px;
+    font-size:12.5px;
+    color:var(--muted-2);
+    line-height:1.7;
+  }
+
+  .panel-foot{
+    display:flex;
+    align-items:center;
+    gap:7px;
+    margin-top:14px;
+    padding-top:13px;
+    border-top:1px solid var(--line);
+    font-size:11.5px;
+    color:var(--muted-2);
+  }
+
+  .panel-foot svg{width:13px;height:13px;flex:none}
+
+  /* ---------- Stats ---------- */
+  .stats{
+    display:grid;
+    grid-template-columns:repeat(4,1fr);
+    gap:14px;
+  }
+
+  .stat{
+    padding:20px 22px;
+    border-radius:18px;
+    border:1px solid var(--line);
+    background:linear-gradient(180deg, rgba(18,26,39,.72), rgba(10,15,24,.5));
+    transition:border-color .25s, transform .25s;
+  }
+
+  .stat:hover{
+    border-color:rgba(148,163,184,.26);
+    transform:translateY(-2px);
+  }
+
+  .stat-value{
+    font-size:2rem;
+    font-weight:700;
+    letter-spacing:-.02em;
+    font-variant-numeric:tabular-nums;
+    line-height:1.1;
+  }
+
+  .stat:nth-child(2) .stat-value{color:#b6c1ff}
+  .stat:nth-child(3) .stat-value{color:#7ff0da}
+  .stat:nth-child(4) .stat-value{color:#fcd34d}
+
+  .stat-label{
+    margin-top:6px;
+    font-size:12px;
+    color:var(--muted);
+    letter-spacing:.04em;
+  }
+
+  /* ---------- Agents section ---------- */
+  .agents-section{
+    padding:64px 0 40px;
+    scroll-margin-top:90px;
+  }
+
+  #overview{scroll-margin-top:90px}
+
+  .section-head{
+    display:flex;
+    align-items:flex-end;
+    justify-content:space-between;
+    gap:24px;
+    flex-wrap:wrap;
+  }
+
+  .section-head h2{
+    margin:0;
+    font-size:1.5rem;
+    letter-spacing:-.02em;
+  }
+
+  .section-head .sub{
+    margin:7px 0 0;
+    font-size:13px;
+    color:var(--muted);
+  }
+
+  .controls{
+    display:flex;
+    align-items:center;
+    gap:10px;
+    flex-wrap:wrap;
+  }
+
+  .search{position:relative}
+
+  .search svg{
+    position:absolute;
+    left:13px;
+    top:50%;
+    transform:translateY(-50%);
+    width:16px;
+    height:16px;
+    color:var(--muted-2);
+    pointer-events:none;
+  }
+
+  .search input{
+    width:280px;
+    height:40px;
+    padding:0 14px 0 38px;
+    border-radius:11px;
+    border:1px solid var(--line-strong);
+    background:#0b111b;
+    color:var(--text);
+    font-size:13px;
+    font-family:inherit;
+    outline:none;
+    transition:border-color .2s, box-shadow .2s;
+  }
+
+  .search input::placeholder{color:var(--muted-2)}
+
+  .search input:focus{
+    border-color:rgba(124,140,255,.6);
+    box-shadow:0 0 0 3px rgba(124,140,255,.12);
+  }
+
+  .select{
+    height:40px;
+    padding:0 34px 0 12px;
+    border-radius:11px;
+    border:1px solid var(--line-strong);
+    background-color:#0b111b;
+    color:var(--muted);
+    font-size:12.5px;
+    font-family:inherit;
+    outline:none;
+    cursor:pointer;
+    appearance:none;
+    -webkit-appearance:none;
+    background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='14' height='14' viewBox='0 0 24 24' fill='none' stroke='%238a97ad' stroke-width='2' stroke-linecap='round'%3E%3Cpath d='m6 9 6 6 6-6'/%3E%3C/svg%3E");
+    background-repeat:no-repeat;
+    background-position:right 12px center;
+    transition:border-color .2s;
+  }
+
+  .select:focus{border-color:rgba(124,140,255,.6)}
+
+  .chips-row{
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+    gap:14px;
+    flex-wrap:wrap;
+    margin-top:18px;
+  }
+
+  .chips{
+    display:flex;
+    flex-wrap:wrap;
+    gap:8px;
+  }
+
+  .chip{
+    display:inline-flex;
+    align-items:center;
+    gap:6px;
+    padding:7px 12px;
+    border-radius:999px;
+    border:1px solid var(--line);
+    background:rgba(255,255,255,.02);
+    color:var(--muted);
+    font-size:12.5px;
+    cursor:pointer;
+    white-space:nowrap;
+    transition:color .2s, background .2s, border-color .2s;
+  }
+
+  .chip span{
+    font-size:11px;
+    color:var(--muted-2);
+    background:rgba(255,255,255,.05);
+    padding:1px 6px;
+    border-radius:999px;
+    font-variant-numeric:tabular-nums;
+  }
+
+  .chip:hover{color:var(--text);border-color:var(--line-strong)}
+
+  .chip.active{
+    color:#0a0f1c;
+    font-weight:650;
+    background:linear-gradient(135deg,#a5b4fc,#5eead4);
+    border-color:transparent;
+  }
+
+  .chip.active span{
+    color:#0a0f1c;
+    background:rgba(10,15,28,.16);
+  }
+
+  .result-count{
+    font-size:12.5px;
+    color:var(--muted-2);
+    font-variant-numeric:tabular-nums;
+  }
+
+  .grid{
+    display:grid;
+    grid-template-columns:repeat(auto-fill, minmax(320px, 1fr));
+    gap:18px;
+    margin-top:22px;
+  }
+
+  .grid[hidden]{display:none}
+
+  .agent-card{
+    position:relative;
+    display:flex;
+    flex-direction:column;
+    gap:14px;
+    padding:22px;
+    border-radius:var(--radius);
+    border:1px solid var(--line);
+    background:linear-gradient(180deg, rgba(18,26,39,.88), rgba(12,18,28,.92));
+    overflow:hidden;
+    animation:rise .45s cubic-bezier(.2,.7,.3,1) both;
+    transition:transform .25s ease, border-color .25s ease, box-shadow .25s ease;
+  }
+
+  .agent-card::before{
+    content:"";
+    position:absolute;
+    inset:0 0 auto;
+    height:1px;
+    background:linear-gradient(90deg,transparent,rgba(124,140,255,.5),rgba(94,234,212,.5),transparent);
+    opacity:0;
+    transition:opacity .3s;
+  }
+
+  .agent-card:hover{
+    transform:translateY(-3px);
+    border-color:rgba(148,163,184,.28);
+    box-shadow:0 20px 44px rgba(2,6,15,.45);
+  }
+
+  .agent-card:hover::before{opacity:1}
+
+  .card-top{
+    display:flex;
+    align-items:center;
+    gap:12px;
+  }
+
+  .avatar{
+    width:44px;
+    height:44px;
+    border-radius:14px;
+    display:grid;
+    place-items:center;
+    font-size:17px;
+    font-weight:800;
+    color:#0a1018;
+    background:linear-gradient(135deg,var(--a,#a5b4fc),var(--b,#5eead4));
+    flex:none;
+  }
+
+  .card-title-wrap{min-width:0;flex:1}
+
+  .card-title-wrap h3{
+    margin:0;
+    font-size:15.5px;
+    font-weight:650;
+    letter-spacing:-.01em;
+    white-space:nowrap;
+    overflow:hidden;
+    text-overflow:ellipsis;
+  }
+
+  .card-meta{
+    margin-top:3px;
+    font-size:11.5px;
+    color:var(--muted-2);
+    white-space:nowrap;
+    overflow:hidden;
+    text-overflow:ellipsis;
+  }
+
+  .status{
+    display:inline-flex;
+    align-items:center;
+    gap:6px;
+    flex:none;
+    padding:4px 9px;
+    border-radius:999px;
+    border:1px solid transparent;
+    font-size:11px;
+    white-space:nowrap;
+  }
+
+  .status::before{
+    content:"";
+    width:5px;
+    height:5px;
+    border-radius:50%;
+    background:currentColor;
+  }
+
+  .status.on{
+    color:#7ff0da;
+    background:rgba(94,234,212,.07);
+    border-color:rgba(94,234,212,.24);
+  }
+
+  .status.sometimes{
+    color:#fcd34d;
+    background:rgba(251,191,36,.07);
+    border-color:rgba(251,191,36,.24);
+  }
+
+  .status.off{
+    color:#8794a9;
+    background:rgba(135,148,169,.07);
+    border-color:rgba(135,148,169,.2);
+  }
+
+  .card-block .card-label{
+    margin-bottom:6px;
+    font-size:10px;
+    letter-spacing:.14em;
+    text-transform:uppercase;
+    color:var(--muted-2);
+  }
+
+  .card-block p{
+    margin:0;
+    font-size:13.5px;
+    line-height:1.7;
+    color:#c3cee3;
+    overflow-wrap:anywhere;
+  }
+
+  .effect-block{
+    padding:11px 13px;
+    border-radius:12px;
+    border:1px solid rgba(94,234,212,.14);
+    background:rgba(94,234,212,.045);
+  }
+
+  .effect-block .card-label{color:#7fd8c9}
+
+  .effect-block p{color:#d5e5e0}
+
+  .metric{
+    align-self:flex-start;
+    display:inline-flex;
+    align-items:center;
+    gap:7px;
+    padding:6px 11px;
+    border-radius:999px;
+    border:1px solid rgba(124,140,255,.22);
+    background:rgba(124,140,255,.1);
+    color:#b9c3ff;
+    font-size:12.5px;
+    font-weight:600;
+    line-height:1.4;
+  }
+
+  .metric svg{width:13px;height:13px;flex:none}
+
+  .card-footer{
+    margin-top:auto;
+    padding-top:14px;
+    border-top:1px solid rgba(148,163,184,.1);
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+    gap:10px;
+  }
+
+  .card-date{font-size:12px;color:var(--muted-2)}
+
+  .card-actions{display:flex;align-items:center;gap:6px}
+
+  /* ---------- Empty ---------- */
+  .empty{
+    margin-top:22px;
+    padding:58px 24px;
+    border:1px dashed var(--line-strong);
+    border-radius:20px;
+    background:rgba(255,255,255,.015);
+    display:flex;
+    flex-direction:column;
+    align-items:center;
+    gap:7px;
+    text-align:center;
+  }
+
+  .empty[hidden]{display:none}
+
+  .empty-icon{
+    width:46px;
+    height:46px;
+    margin-bottom:6px;
+    border-radius:50%;
+    display:grid;
+    place-items:center;
+    background:rgba(124,140,255,.12);
+    color:#a5b4fc;
+  }
+
+  .empty-icon svg{width:22px;height:22px}
+
+  .empty-title{margin:0;font-size:15px;font-weight:600}
+
+  .empty-hint{margin:0;font-size:13px;color:var(--muted)}
+
+  .empty .btn{margin-top:14px}
+
+  /* ---------- Footer ---------- */
+  .footer{
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+    gap:12px;
+    flex-wrap:wrap;
+    padding:26px 0 44px;
+    border-top:1px solid var(--line);
+    margin-top:24px;
+    font-size:12.5px;
+    color:var(--muted-2);
+  }
+
+  /* ---------- Dialog ---------- */
+  dialog{
+    width:min(680px, calc(100vw - 32px));
+    max-height:calc(100vh - 48px);
+    padding:0;
+    border:1px solid var(--line-strong);
+    border-radius:24px;
+    background:linear-gradient(180deg, #111927, #0b111b);
+    color:var(--text);
+    box-shadow:0 40px 100px rgba(0,0,0,.65);
+    overflow:auto;
+  }
+
+  dialog::backdrop{
+    background:rgba(3,6,12,.7);
+    backdrop-filter:blur(6px);
+    -webkit-backdrop-filter:blur(6px);
+  }
+
+  .dialog-head{
+    display:flex;
+    align-items:flex-start;
+    justify-content:space-between;
+    gap:16px;
+    padding:26px 28px 0;
+  }
+
+  .dialog-head h2{
+    margin:0;
+    font-size:1.25rem;
+    letter-spacing:-.02em;
+  }
+
+  .dialog-head p{
+    margin:7px 0 0;
+    font-size:13px;
+    color:var(--muted);
+    line-height:1.6;
+  }
+
+  .dialog-form{padding:22px 28px 26px}
+
+  .form-grid{
+    display:grid;
+    grid-template-columns:1fr 1fr;
+    gap:16px;
+  }
+
+  .field{display:flex;flex-direction:column;gap:7px}
+
+  .field.full{grid-column:1/-1}
+
+  .field label{
+    font-size:12px;
+    color:var(--muted);
+    font-weight:500;
+  }
+
+  .field .req{color:#ff9db1}
+
+  .field input,
+  .field select,
+  .field textarea{
+    width:100%;
+    padding:10px 12px;
+    border-radius:10px;
+    border:1px solid var(--line-strong);
+    background:#0b111b;
+    color:var(--text);
+    font-size:14px;
+    font-family:inherit;
+    outline:none;
+    transition:border-color .2s, box-shadow .2s;
+  }
+
+  .field textarea{
+    min-height:88px;
+    line-height:1.65;
+    resize:vertical;
+  }
+
+  .field input::placeholder,
+  .field textarea::placeholder{color:var(--muted-2)}
+
+  .field input:focus,
+  .field select:focus,
+  .field textarea:focus{
+    border-color:rgba(124,140,255,.6);
+    box-shadow:0 0 0 3px rgba(124,140,255,.12);
+  }
+
+  .field select{
+    appearance:none;
+    -webkit-appearance:none;
+    background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='14' height='14' viewBox='0 0 24 24' fill='none' stroke='%238a97ad' stroke-width='2' stroke-linecap='round'%3E%3Cpath d='m6 9 6 6 6-6'/%3E%3C/svg%3E");
+    background-repeat:no-repeat;
+    background-position:right 12px center;
+    padding-right:34px;
+    cursor:pointer;
+  }
+
+  .dialog-actions{
+    display:flex;
+    justify-content:flex-end;
+    gap:10px;
+    margin-top:24px;
+    padding-top:20px;
+    border-top:1px solid var(--line);
+  }
+
+  /* ---------- Toast ---------- */
+  .toast{
+    position:fixed;
+    left:50%;
+    bottom:28px;
+    transform:translate(-50%, 16px);
+    max-width:calc(100vw - 40px);
+    padding:11px 18px;
+    border-radius:12px;
+    border:1px solid var(--line-strong);
+    background:rgba(18,26,39,.97);
+    color:var(--text);
+    font-size:13px;
+    box-shadow:var(--shadow);
+    opacity:0;
+    pointer-events:none;
+    transition:opacity .25s ease, transform .25s ease;
+    z-index:300;
+  }
+
+  .toast.show{opacity:1;transform:translate(-50%, 0)}
+
+  /* ---------- Misc ---------- */
+  :focus-visible{outline:2px solid rgba(124,140,255,.65);outline-offset:2px}
+
+  ::-webkit-scrollbar{width:10px;height:10px}
+  ::-webkit-scrollbar-track{background:transparent}
+  ::-webkit-scrollbar-thumb{background:#1e293b;border-radius:6px;border:2px solid var(--bg)}
+
+  @keyframes rise{
+    from{opacity:0;transform:translateY(14px)}
+    to{opacity:1;transform:translateY(0)}
+  }
+
+  @media (max-width: 960px){
+    .hero{grid-template-columns:1fr;gap:36px;padding:64px 0 44px}
+    .hero-copy p{max-width:none}
+    .stats{grid-template-columns:repeat(2,1fr)}
+  }
+
+  @media (max-width: 720px){
+    .nav-links{display:none}
+    .nav-inner{gap:12px}
+    .btn-label{display:none}
+    .btn-sm{padding:8px 10px}
+    .search input{width:230px}
+  }
+
+  @media (max-width: 640px){
+    .container{width:calc(100% - 32px)}
+    .hero{padding:52px 0 36px}
+    .hero-actions .btn{flex:1 1 auto}
+    .section-head{align-items:flex-start}
+    .controls{width:100%}
+    .search{flex:1 1 100%}
+    .search input{width:100%}
+    .select{flex:1 1 auto}
+    .grid{grid-template-columns:1fr;gap:14px}
+    .form-grid{grid-template-columns:1fr}
+    .dialog-head{padding:22px 20px 0}
+    .dialog-form{padding:18px 20px 22px}
+    .footer{flex-direction:column;align-items:flex-start;gap:6px}
+    .stat{padding:16px 18px}
+    .stat-value{font-size:1.65rem}
+  }
+
+  @media (prefers-reduced-motion: reduce){
+    *, *::before, *::after{
+      animation-duration:.01ms !important;
+      animation-iteration-count:1 !important;
+      transition-duration:.01ms !important;
+      scroll-behavior:auto !important;
+    }
+  }
+</style>
+</head>
+<body>
+
+<header class="nav" id="top">
+  <div class="container nav-inner">
+    <a class="brand" href="#top" aria-label="Agent 档案首页">
+      <span class="brand-mark">A</span>
+      <span class="brand-text">Agent 档案</span>
+    </a>
+    <nav class="nav-links" aria-label="主导航">
+      <a href="#overview">概览</a>
+      <a href="#agents">Agent 列表</a>
+    </nav>
+    <div class="nav-actions">
+      <button class="btn btn-ghost btn-sm" type="button" id="exportBtn" title="导出 JSON 备份">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3v12"/><path d="m8 11 4 4 4-4"/><path d="M4 17v2a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-2"/></svg>
+        <span class="btn-label">导出</span>
+      </button>
+      <button class="btn btn-ghost btn-sm" type="button" id="importBtn" title="导入 JSON 备份">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 17V5"/><path d="m8 9 4-4 4 4"/><path d="M4 17v2a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-2"/></svg>
+        <span class="btn-label">导入</span>
+      </button>
+      <button class="btn btn-primary btn-sm" type="button" id="navAdd">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" aria-hidden="true"><path d="M12 5v14M5 12h14"/></svg>
+        <span class="btn-label">添加 Agent</span>
+      </button>
+      <input type="file" id="importInput" accept="application/json,.json" hidden>
+    </div>
+  </div>
+</header>
+
+<main class="container" id="overview">
+  <section class="hero">
+    <div class="hero-copy">
+      <div class="eyebrow">Personal AI Practice Log</div>
+      <h1>我用过的 Agent，<br><span class="grad">都记录在这里。</span></h1>
+      <p>记录每个 Agent 用来做什么、怎么参与工作、最终取得了什么效果。让零散的使用经验，慢慢沉淀成一套可以复用的方法。</p>
+      <div class="hero-actions">
+        <button class="btn btn-primary" type="button" id="heroAdd">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" aria-hidden="true"><path d="M12 5v14M5 12h14"/></svg>
+          添加 Agent 记录
+        </button>
+        <a class="btn btn-ghost" href="#agents">查看全部记录</a>
+      </div>
+    </div>
+
+    <aside class="hero-panel" aria-label="最近更新的 Agent">
+      <div class="panel-head">
+        <span class="panel-title">最近更新</span>
+        <span class="panel-badge" id="recentBadge">0 条</span>
+      </div>
+      <div id="recentList"></div>
+      <div class="panel-foot">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="4" y="10" width="16" height="10" rx="2"/><path d="M8 10V7a4 4 0 0 1 8 0v3"/></svg>
+        数据保存在本机浏览器，不会上传到任何服务器
+      </div>
+    </aside>
+  </section>
+
+  <section class="stats" aria-label="数据概览">
+    <div class="stat">
+      <div class="stat-value" id="statTotal">0</div>
+      <div class="stat-label">收录 Agent</div>
+    </div>
+    <div class="stat">
+      <div class="stat-value" id="statCats">0</div>
+      <div class="stat-label">覆盖场景</div>
+    </div>
+    <div class="stat">
+      <div class="stat-value" id="statActive">0</div>
+      <div class="stat-label">正在使用</div>
+    </div>
+    <div class="stat">
+      <div class="stat-value" id="statMetrics">0</div>
+      <div class="stat-label">效果指标</div>
+    </div>
+  </section>
+
+  <section class="agents-section" id="agents">
+    <div class="section-head">
+      <div>
+        <h2>Agent 列表</h2>
+        <p class="sub">按场景筛选，或者直接搜索名称、用途与效果。</p>
+      </div>
+      <div class="controls">
+        <div class="search">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.6-3.6"/></svg>
+          <input type="search" id="searchInput" placeholder="搜索名称、用途或效果" autocomplete="off" aria-label="搜索 Agent">
+        </div>
+        <select class="select" id="sortSelect" aria-label="排序方式">
+          <option value="recent">最近更新</option>
+          <option value="oldest">最早添加</option>
+          <option value="name">名称排序</option>
+          <option value="category">按分类排序</option>
+        </select>
+      </div>
+    </div>
+
+    <div class="chips-row">
+      <div class="chips" id="categoryChips"></div>
+      <span class="result-count" id="resultCount">共 0 条记录</span>
+    </div>
+
+    <div class="grid" id="agentGrid"></div>
+
+    <div class="empty" id="emptyState" hidden>
+      <div class="empty-icon">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" aria-hidden="true"><path d="M12 5v14M5 12h14"/></svg>
+      </div>
+      <p class="empty-title" id="emptyTitle">还没有记录</p>
+      <p class="empty-hint" id="emptyHint">把用过的 Agent 记下来，效果会慢慢清晰。</p>
+      <button class="btn btn-primary" type="button" id="emptyAdd">添加第一条记录</button>
+    </div>
+  </section>
+</main>
+
+<footer class="container footer">
+  <span>Agent 档案 · 记录 · 复盘 · 复用</span>
+  <span>数据仅保存在本地浏览器，可随时导出备份</span>
+</footer>
+
+<dialog id="agentDialog" aria-labelledby="dialogTitle">
+  <div class="dialog-inner">
+    <div class="dialog-head">
+      <div>
+        <h2 id="dialogTitle">添加 Agent 记录</h2>
+        <p id="dialogSubtitle">记录一个你用过的 Agent，之后可以随时修改。</p>
+      </div>
+      <button class="icon-btn" type="button" id="closeDialog" aria-label="关闭">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M6 6l12 12M18 6 6 18"/></svg>
+      </button>
+    </div>
+
+    <form class="dialog-form" id="agentForm" novalidate>
+      <div class="form-grid">
+        <div class="field">
+          <label for="f-name">Agent 名称 <span class="req">*</span></label>
+          <input id="f-name" name="name" type="text" maxlength="60" placeholder="例如：Claude Code" autocomplete="off">
+        </div>
+        <div class="field">
+          <label for="f-category">分类</label>
+          <select id="f-category" name="category"></select>
+        </div>
+        <div class="field">
+          <label for="f-status">使用状态</label>
+          <select id="f-status" name="status">
+            <option value="正在使用">正在使用</option>
+            <option value="偶尔使用">偶尔使用</option>
+            <option value="已停用">已停用</option>
+          </select>
+        </div>
+        <div class="field">
+          <label for="f-started">开始使用</label>
+          <input id="f-started" name="started" type="month">
+        </div>
+        <div class="field full">
+          <label for="f-url">相关链接</label>
+          <input id="f-url" name="url" type="text" placeholder="https://…（可选）" autocomplete="off">
+        </div>
+        <div class="field full">
+          <label for="f-purpose">用来做什么 <span class="req">*</span></label>
+          <textarea id="f-purpose" name="purpose" rows="3" maxlength="300" placeholder="它在你的工作流里承担什么角色，例如：负责生成代码、重构、定位 Bug。"></textarea>
+        </div>
+        <div class="field full">
+          <label for="f-effect">取得效果 <span class="req">*</span></label>
+          <textarea id="f-effect" name="effect" rows="3" maxlength="300" placeholder="具体产出了什么、节省了多少时间、质量有什么变化。"></textarea>
+        </div>
+        <div class="field full">
+          <label for="f-metric">关键指标（可选）</label>
+          <input id="f-metric" name="metric" type="text" maxlength="40" placeholder="例如：开发效率提升 40%" autocomplete="off">
+        </div>
+      </div>
+      <div class="dialog-actions">
+        <button class="btn btn-ghost" type="button" id="cancelBtn">取消</button>
+        <button class="btn btn-primary" type="submit">保存记录</button>
+      </div>
+    </form>
+  </div>
+</dialog>
+
+<div class="toast" id="toast" role="status" aria-live="polite"></div>
+
+<script>
+(function () {
+  'use strict';
+
+  var STORE_KEY = 'agent-archive-v1';
+  var CATEGORIES = ['编程开发', '内容创作', '研究调研', '数据分析', '设计创意', '效率办公', '其他'];
+  var STATUS_CLASS = {
+    '正在使用': 'on',
+    '偶尔使用': 'sometimes',
+    '已停用': 'off'
+  };
+  var PALETTE = [
+    ['#a5b4fc', '#5eead4'],
+    ['#7dd3fc', '#818cf8'],
+    ['#fda4af', '#fbbf24'],
+    ['#c4b5fd', '#f472b6'],
+    ['#fcd34d', '#fb923c'],
+    ['#6ee7b7', '#38bdf8']
+  ];
+
+  /* 公开展示的默认档案：所有访客首次打开都会看到这份数据 */
+  var DEFAULT_AGENTS = [
+    {
+      id: 'agent-claude-code',
+      name: 'Claude Code',
+      category: '编程开发',
+      status: '正在使用',
+      started: '2026-08',
+      url: 'https://claude.ai/code',
+      purpose: '把需求拆解后直接生成可运行代码，负责项目脚手架、跨文件重构和 Bug 定位。',
+      effect: '独立完成两个内部工具的开发与调试，重复性编码明显减少，提交前的自查也更完整。',
+      metric: '开发效率提升 40%',
+      createdAt: '2026-08-10T09:00:00.000Z',
+      updatedAt: '2026-10-20T10:00:00.000Z'
+    },
+    {
+      id: 'agent-cursor',
+      name: 'Cursor',
+      category: '编程开发',
+      status: '正在使用',
+      started: '2026-06',
+      url: 'https://cursor.com',
+      purpose: '日常写代码时的补全与局部重构，配合项目上下文快速理解陌生的老代码。',
+      effect: '接手陌生模块的阅读时间从半天缩短到一小时左右，小改动几乎不用来回查文档。',
+      metric: '读代码时间减少 60%',
+      createdAt: '2026-06-15T09:00:00.000Z',
+      updatedAt: '2026-10-17T09:00:00.000Z'
+    },
+    {
+      id: 'agent-perplexity',
+      name: 'Perplexity',
+      category: '研究调研',
+      status: '偶尔使用',
+      started: '2026-05',
+      url: 'https://www.perplexity.ai',
+      purpose: '查技术方案、对比工具选型，让检索结果直接带上来源链接。',
+      effect: '选型调研从翻十几个网页变成几次追问，结论更容易追溯和复核。',
+      metric: '调研时间缩短 50%',
+      createdAt: '2026-05-18T09:00:00.000Z',
+      updatedAt: '2026-10-13T09:00:00.000Z'
+    },
+    {
+      id: 'agent-midjourney',
+      name: 'Midjourney',
+      category: '设计创意',
+      status: '偶尔使用',
+      started: '2026-04',
+      url: 'https://www.midjourney.com',
+      purpose: '为文章和页面生成配图概念，快速探索不同的视觉方向。',
+      effect: '配图从找图半小时变成十分钟内出三版候选，整体风格也更统一。',
+      metric: '出图效率提升 3 倍',
+      createdAt: '2026-04-20T09:00:00.000Z',
+      updatedAt: '2026-10-08T09:00:00.000Z'
+    },
+    {
+      id: 'agent-notion-ai',
+      name: 'Notion AI',
+      category: '效率办公',
+      status: '正在使用',
+      started: '2026-03',
+      url: 'https://www.notion.so',
+      purpose: '整理会议纪要、归纳长文档，把口语记录转成结构化要点。',
+      effect: '会后十分钟内产出可分享的纪要，遗漏事项明显减少。',
+      metric: '纪要整理时间减少 70%',
+      createdAt: '2026-03-12T09:00:00.000Z',
+      updatedAt: '2026-10-02T09:00:00.000Z'
+    }
+  ];
+
+  var ICONS = {
+    bolt: '<svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M13 2 4.5 13.5H10l-1 8.5 8.5-11H12l1-9Z"/></svg>',
+    edit: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 20h9"/><path d="M16.5 3.5a2.1 2.1 0 0 1 3 3L7 19l-4 1 1-4Z"/></svg>',
+    trash: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 6h18"/><path d="M8 6V4h8v2"/><path d="M19 6l-1 14H6L5 6"/><path d="M10 11v6M14 11v6"/></svg>',
+    link: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M10 13a5 5 0 0 0 7.5.5l2-2a5 5 0 0 0-7-7l-1 1"/><path d="M14 11a5 5 0 0 0-7.5-.5l-2 2a5 5 0 0 0 7 7l1-1"/></svg>'
+  };
+
+  var state = { agents: [], query: '', category: '全部', sort: 'recent' };
+  var editingId = null;
+  var toastTimer = null;
+
+  var els = {
+    grid: document.getElementById('agentGrid'),
+    empty: document.getElementById('emptyState'),
+    emptyTitle: document.getElementById('emptyTitle'),
+    emptyHint: document.getElementById('emptyHint'),
+    emptyAdd: document.getElementById('emptyAdd'),
+    resultCount: document.getElementById('resultCount'),
+    chips: document.getElementById('categoryChips'),
+    search: document.getElementById('searchInput'),
+    sort: document.getElementById('sortSelect'),
+    statTotal: document.getElementById('statTotal'),
+    statCats: document.getElementById('statCats'),
+    statActive: document.getElementById('statActive'),
+    statMetrics: document.getElementById('statMetrics'),
+    recentList: document.getElementById('recentList'),
+    recentBadge: document.getElementById('recentBadge'),
+    dialog: document.getElementById('agentDialog'),
+    dialogTitle: document.getElementById('dialogTitle'),
+    dialogSubtitle: document.getElementById('dialogSubtitle'),
+    form: document.getElementById('agentForm'),
+    closeDialog: document.getElementById('closeDialog'),
+    cancelBtn: document.getElementById('cancelBtn'),
+    importBtn: document.getElementById('importBtn'),
+    importInput: document.getElementById('importInput'),
+    exportBtn: document.getElementById('exportBtn'),
+    toast: document.getElementById('toast')
+  };
+
+  /* ---------- helpers ---------- */
+
+  function esc(value) {
+    return String(value == null ? '' : value).replace(/[&<>"']/g, function (ch) {
+      return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[ch];
+    });
+  }
+
+  function uid() {
+    if (window.crypto && typeof window.crypto.randomUUID === 'function') {
+      return window.crypto.randomUUID();
+    }
+    return 'a-' + Date.now().toString(36) + '-' + Math.random().toString(36).slice(2, 9);
+  }
+
+  function firstChar(name) {
+    var chars = Array.from(String(name || '').trim());
+    return chars.length ? chars[0].toUpperCase() : '?';
+  }
+
+  function paletteFor(name) {
+    var hash = 0;
+    var text = String(name || '');
+    for (var i = 0; i < text.length; i++) {
+      hash = (hash * 31 + text.codePointAt(i)) >>> 0;
+    }
+    var pair = PALETTE[hash % PALETTE.length];
+    return '--a:' + pair[0] + ';--b:' + pair[1];
+  }
+
+  function statusClass(status) {
+    return STATUS_CLASS[status] || 'off';
+  }
+
+  function normalizeAgent(raw) {
+    if (!raw || typeof raw !== 'object') raw = {};
+    var now = new Date().toISOString();
+    var status = Object.prototype.hasOwnProperty.call(STATUS_CLASS, raw.status) ? raw.status : '正在使用';
+    return {
+      id: typeof raw.id === 'string' && raw.id ? raw.id : uid(),
+      name: String(raw.name || '未命名 Agent').slice(0, 60),
+      category: CATEGORIES.indexOf(raw.category) > -1 ? raw.category : '其他',
+      purpose: String(raw.purpose || ''),
+      effect: String(raw.effect || ''),
+      metric: String(raw.metric || '').slice(0, 40),
+      status: status,
+      started: /^\d{4}-\d{2}$/.test(raw.started || '') ? raw.started : '',
+      url: String(raw.url || ''),
+      createdAt: raw.createdAt || now,
+      updatedAt: raw.updatedAt || now
+    };
+  }
+
+  function persist() {
+    try {
+      localStorage.setItem(STORE_KEY, JSON.stringify(state.agents));
+    } catch (err) {
+      toast('保存失败：浏览器本地存储不可用');
+    }
+  }
+
+  function loadAgents() {
+    var raw = null;
+    try {
+      raw = localStorage.getItem(STORE_KEY);
+    } catch (err) {
+      raw = null;
+    }
+
+    if (raw === null) {
+      state.agents = DEFAULT_AGENTS.map(normalizeAgent);
+      return;
+    }
+
+    try {
+      var data = JSON.parse(raw);
+      if (Array.isArray(data)) {
+        state.agents = data.map(normalizeAgent);
+      }
+    } catch (err) {
+      state.agents = [];
+    }
+  }
+
+  /* ---------- rendering ---------- */
+
+  function render() {
+    renderStats();
+    renderRecent();
+    renderChips();
+    renderGrid();
+  }
+
+  function renderStats() {
+    var categories = {};
+    var active = 0;
+    var metrics = 0;
+
+    state.agents.forEach(function (a) {
+      categories[a.category] = true;
+      if (a.status === '正在使用') active++;
+      if (a.metric) metrics++;
+    });
+
+    els.statTotal.textContent = state.agents.length;
+    els.statCats.textContent = Object.keys(categories).length;
+    els.statActive.textContent = active;
+    els.statMetrics.textContent = metrics;
+  }
+
+  function renderRecent() {
+    var recent = state.agents.slice().sort(function (a, b) {
+      return String(b.updatedAt).localeCompare(String(a.updatedAt));
+    }).slice(0, 3);
+
+    els.recentBadge.textContent = state.agents.length + ' 条';
+
+    if (!recent.length) {
+      els.recentList.innerHTML = '<div class="recent-empty">还没有记录，添加之后这里会显示最近更新的 Agent。</div>';
+      return;
+    }
+
+    els.recentList.innerHTML = recent.map(function (a) {
+      return '<div class="recent-item">' +
+        '<div class="recent-avatar" style="' + paletteFor(a.name) + '">' + esc(firstChar(a.name)) + '</div>' +
+        '<div class="recent-info">' +
+          '<div class="recent-name">' + esc(a.name) + '</div>' +
+          '<div class="recent-meta">' + esc(a.category) + ' · ' + esc(a.metric || a.status) + '</div>' +
+        '</div>' +
+        '<span class="dot ' + statusClass(a.status) + '" title="' + esc(a.status) + '"></span>' +
+      '</div>';
+    }).join('');
+  }
+
+  function renderChips() {
+    var counts = {};
+    state.agents.forEach(function (a) {
+      counts[a.category] = (counts[a.category] || 0) + 1;
+    });
+
+    if (state.category !== '全部' && !counts[state.category]) {
+      state.category = '全部';
+    }
+
+    var items = [['全部', state.agents.length]];
+    CATEGORIES.forEach(function (cat) {
+      if (counts[cat]) items.push([cat, counts[cat]]);
+    });
+
+    els.chips.innerHTML = items.map(function (item) {
+      var cat = item[0];
+      return '<button class="chip' + (state.category === cat ? ' active' : '') + '" type="button" data-cat="' + esc(cat) + '">' +
+        esc(cat) + '<span>' + item[1] + '</span>' +
+      '</button>';
+    }).join('');
+  }
+
+  function getFiltered() {
+    var q = state.query.trim().toLowerCase();
+
+    var list = state.agents.filter(function (a) {
+      if (state.category !== '全部' && a.category !== state.category) return false;
+      if (!q) return true;
+      var haystack = [a.name, a.purpose, a.effect, a.metric, a.category, a.status].join(' ').toLowerCase();
+      return haystack.indexOf(q) > -1;
+    });
+
+    list.sort(function (a, b) {
+      if (state.sort === 'oldest') {
+        return String(a.createdAt).localeCompare(String(b.createdAt));
+      }
+      if (state.sort === 'name') {
+        return a.name.localeCompare(b.name, 'zh-Hans-CN');
+      }
+      if (state.sort === 'category') {
+        return a.category.localeCompare(b.category, 'zh-Hans-CN') ||
+          a.name.localeCompare(b.name, 'zh-Hans-CN');
+      }
+      return String(b.updatedAt).localeCompare(String(a.updatedAt));
+    });
+
+    return list;
+  }
+
+  function cardHTML(a, index) {
+    var safeUrl = /^https?:\/\//i.test(a.url || '') ? esc(a.url) : '';
+    var link = safeUrl
+      ? '<a class="icon-btn" href="' + safeUrl + '" target="_blank" rel="noopener noreferrer" aria-label="打开链接" title="打开链接">' + ICONS.link + '</a>'
+      : '';
+
+    return '<article class="agent-card" style="animation-delay:' + Math.min(index * 40, 280) + 'ms">' +
+      '<div class="card-top">' +
+        '<div class="avatar" style="' + paletteFor(a.name) + '">' + esc(firstChar(a.name)) + '</div>' +
+        '<div class="card-title-wrap">' +
+          '<h3 title="' + esc(a.name) + '">' + esc(a.name) + '</h3>' +
+          '<div class="card-meta">' + esc(a.category) + (a.started ? ' · ' + esc(a.started) + ' 起' : '') + '</div>' +
+        '</div>' +
+        '<span class="status ' + statusClass(a.status) + '">' + esc(a.status) + '</span>' +
+      '</div>' +
+      '<div class="card-block">' +
+        '<div class="card-label">用来做什么</div>' +
+        '<p>' + esc(a.purpose) + '</p>' +
+      '</div>' +
+      '<div class="card-block effect-block">' +
+        '<div class="card-label">取得效果</div>' +
+        '<p>' + esc(a.effect) + '</p>' +
+      '</div>' +
+      (a.metric ? '<div class="metric">' + ICONS.bolt + esc(a.metric) + '</div>' : '') +
+      '<div class="card-footer">' +
+        '<span class="card-date">' + (a.started ? esc(a.started) + ' 起' : '时间未填写') + '</span>' +
+        '<div class="card-actions">' +
+          link +
+          '<button class="icon-btn" type="button" data-action="edit" data-id="' + esc(a.id) + '" aria-label="编辑记录" title="编辑">' + ICONS.edit + '</button>' +
+          '<button class="icon-btn danger" type="button" data-action="delete" data-id="' + esc(a.id) + '" aria-label="删除记录" title="删除">' + ICONS.trash + '</button>' +
+        '</div>' +
+      '</div>' +
+    '</article>';
+  }
+
+  function renderGrid() {
+    var list = getFiltered();
+
+    els.resultCount.textContent = '共 ' + list.length + ' 条记录';
+    els.grid.innerHTML = list.map(cardHTML).join('');
+    els.grid.hidden = list.length === 0;
+    els.empty.hidden = list.length > 0;
+
+    if (!list.length) {
+      var hasAny = state.agents.length > 0;
+      els.emptyTitle.textContent = hasAny ? '没有找到匹配的记录' : '还没有记录';
+      els.emptyHint.textContent = hasAny
+        ? '试试换个关键词，或者切换到「全部」分类。'
+        : '把用过的 Agent 记下来，效果会慢慢清晰。';
+      els.emptyAdd.textContent = hasAny ? '添加新的记录' : '添加第一条记录';
+    }
+  }
+
+  /* ---------- dialog ---------- */
+
+  function buildCategoryOptions() {
+    var select = els.form.elements.category;
+    CATEGORIES.forEach(function (cat) {
+      var option = document.createElement('option');
+      option.value = cat;
+      option.textContent = cat;
+      select.appendChild(option);
+    });
+  }
+
+  function openDialog(agent) {
+    editingId = agent ? agent.id : null;
+    els.form.reset();
+
+    els.dialogTitle.textContent = agent ? '编辑 Agent 记录' : '添加 Agent 记录';
+    els.dialogSubtitle.textContent = agent
+      ? '更新它的使用场景和效果，保存后立即生效。'
+      : '记录一个你用过的 Agent，之后可以随时修改。';
+
+    var f = els.form.elements;
+
+    if (agent) {
+      f.name.value = agent.name;
+      f.category.value = agent.category;
+      f.status.value = agent.status;
+      f.started.value = agent.started;
+      f.url.value = agent.url;
+      f.purpose.value = agent.purpose;
+      f.effect.value = agent.effect;
+      f.metric.value = agent.metric;
+    } else {
+      f.started.value = new Date().toISOString().slice(0, 7);
+    }
+
+    els.dialog.showModal();
+    requestAnimationFrame(function () {
+      f.name.focus();
+    });
+  }
+
+  function closeDialog() {
+    els.dialog.close();
+  }
+
+  function handleSubmit(event) {
+    event.preventDefault();
+
+    var f = els.form.elements;
+    var name = f.name.value.trim();
+    var purpose = f.purpose.value.trim();
+    var effect = f.effect.value.trim();
+
+    if (!name || !purpose || !effect) {
+      toast('请填写名称、用来做什么和取得效果');
+      return;
+    }
+
+    var url = f.url.value.trim();
+    if (url && !/^https?:\/\//i.test(url)) {
+      url = 'https://' + url;
+    }
+
+    var payload = {
+      name: name,
+      category: f.category.value,
+      status: f.status.value,
+      started: f.started.value,
+      url: url,
+      purpose: purpose,
+      effect: effect,
+      metric: f.metric.value.trim()
+    };
+
+    var now = new Date().toISOString();
+    var wasEditing = !!editingId;
+
+    if (editingId) {
+      var index = state.agents.findIndex(function (a) { return a.id === editingId; });
+      if (index > -1) {
+        state.agents[index] = Object.assign({}, state.agents[index], payload, { updatedAt: now });
+      }
+    } else {
+      state.agents.unshift(Object.assign({ id: uid() }, payload, {
+        createdAt: now,
+        updatedAt: now
+      }));
+    }
+
+    persist();
+    render();
+    closeDialog();
+    editingId = null;
+    toast(wasEditing ? '记录已更新' : '已添加新的 Agent 记录');
+  }
+
+  /* ---------- actions ---------- */
+
+  function deleteAgent(agent) {
+    if (!window.confirm('确定删除「' + agent.name + '」的记录吗？删除后无法恢复。')) return;
+    state.agents = state.agents.filter(function (a) { return a.id !== agent.id; });
+    persist();
+    render();
+    toast('记录已删除');
+  }
+
+  function exportData() {
+    if (!state.agents.length) {
+      toast('还没有可导出的记录');
+      return;
+    }
+
+    var blob = new Blob([JSON.stringify(state.agents, null, 2)], { type: 'application/json' });
+    var href = URL.createObjectURL(blob);
+    var link = document.createElement('a');
+    link.href = href;
+    link.download = 'agent-archive-' + new Date().toISOString().slice(0, 10) + '.json';
+    document.body.appendChild(link);
+    link.click();
+    link.remove();
+    setTimeout(function () { URL.revokeObjectURL(href); }, 1000);
+
+    toast('已导出 ' + state.agents.length + ' 条记录');
+  }
+
+  function importData(file) {
+    if (!file) return;
+    file.text().then(function (text) {
+      var data = JSON.parse(text);
+      var list = Array.isArray(data) ? data : (data && Array.isArray(data.agents) ? data.agents : null);
+
+      if (!list) throw new Error('文件格式不正确');
+      if (!list.length) throw new Error('文件里没有记录');
+
+      if (!window.confirm('导入 ' + list.length + ' 条记录会覆盖当前 ' + state.agents.length + ' 条记录，是否继续？')) {
+        return;
+      }
+
+      state.agents = list.map(normalizeAgent);
+      state.category = '全部';
+      persist();
+      render();
+      toast('已导入 ' + list.length + ' 条记录');
+    }).catch(function (err) {
+      toast('导入失败：' + (err && err.message ? err.message : '文件格式不正确'));
+    });
+  }
+
+  function toast(message) {
+    els.toast.textContent = message;
+    els.toast.classList.add('show');
+    clearTimeout(toastTimer);
+    toastTimer = setTimeout(function () {
+      els.toast.classList.remove('show');
+    }, 2400);
+  }
+
+  /* ---------- bindings ---------- */
+
+  function bindEvents() {
+    document.getElementById('heroAdd').addEventListener('click', function () { openDialog(null); });
+    document.getElementById('navAdd').addEventListener('click', function () { openDialog(null); });
+    els.emptyAdd.addEventListener('click', function () { openDialog(null); });
+
+    els.form.addEventListener('submit', handleSubmit);
+    els.closeDialog.addEventListener('click', closeDialog);
+    els.cancelBtn.addEventListener('click', closeDialog);
+
+    els.dialog.addEventListener('click', function (event) {
+      if (event.target === els.dialog) closeDialog();
+    });
+
+    els.dialog.addEventListener('close', function () {
+      editingId = null;
+    });
+
+    els.search.addEventListener('input', function (event) {
+      state.query = event.target.value;
+      renderGrid();
+    });
+
+    els.sort.addEventListener('change', function (event) {
+      state.sort = event.target.value;
+      renderGrid();
+    });
+
+    els.chips.addEventListener('click', function (event) {
+      var chip = event.target.closest('[data-cat]');
+      if (!chip) return;
+      state.category = chip.dataset.cat;
+      render();
+    });
+
+    els.grid.addEventListener('click', function (event) {
+      var btn = event.target.closest('[data-action]');
+      if (!btn) return;
+
+      var agent = state.agents.find(function (a) { return a.id === btn.dataset.id; });
+      if (!agent) return;
+
+      if (btn.dataset.action === 'edit') openDialog(agent);
+      else if (btn.dataset.action === 'delete') deleteAgent(agent);
+    });
+
+    els.exportBtn.addEventListener('click', exportData);
+    els.importBtn.addEventListener('click', function () { els.importInput.click(); });
+    els.importInput.addEventListener('change', function (event) {
+      var file = event.target.files && event.target.files[0];
+      event.target.value = '';
+      importData(file);
+    });
+  }
+
+  /* ---------- init ---------- */
+
+  buildCategoryOptions();
+  loadAgents();
+  bindEvents();
+  render();
+})();
+</script>
+</body>
+</html>
