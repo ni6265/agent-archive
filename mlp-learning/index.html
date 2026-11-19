@@ -1,0 +1,351 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>MLP 学习参数的实现与可视化 · 外卖议事厅学习篇</title>
+<style>
+  *{box-sizing:border-box}
+  body{margin:0;background:#f6f3ec;color:#23211d;font-family:"PingFang SC","Microsoft YaHei","Segoe UI",system-ui,sans-serif;line-height:1.6}
+  header{background:#1f2937;color:#f9fafb;padding:34px 20px 28px}
+  header .wrap,main{max-width:960px;margin:0 auto}
+  header h1{margin:0 0 8px;font-size:26px;line-height:1.35}
+  header p{margin:4px 0;color:#cbd5e1}
+  header .tag{display:inline-block;background:#f59e0b;color:#1f2937;border-radius:999px;padding:2px 12px;font-size:13px;font-weight:700;margin-bottom:12px}
+  main{padding:24px 20px 60px}
+  section{background:#fff;border:1px solid #e5ddd0;border-radius:14px;padding:22px;margin-bottom:22px;box-shadow:0 2px 10px rgba(0,0,0,.04)}
+  h2{margin:0 0 6px;font-size:20px}
+  h3{margin:18px 0 8px;font-size:16px}
+  .sub{color:#6b7280;margin:0 0 14px}
+  table{border-collapse:collapse;width:100%;font-size:14px}
+  th,td{border:1px solid #e5e7eb;padding:6px 10px;text-align:center}
+  th{background:#f3f4f6}
+  .pos{color:#047857;font-weight:700}
+  .neg{color:#b91c1c;font-weight:700}
+  .controls{display:flex;flex-wrap:wrap;gap:10px;align-items:center;margin:12px 0}
+  .controls label{font-size:14px}
+  .controls input[type=number]{width:90px;padding:6px 8px;border:1px solid #d1d5db;border-radius:8px}
+  .controls input[type=range]{width:160px}
+  button{cursor:pointer;border:0;border-radius:9px;padding:9px 16px;font-size:14px;font-weight:700;background:#f59e0b;color:#1f2937}
+  button.secondary{background:#e5e7eb;color:#1f2937}
+  button.ghost{background:#fff;border:1px solid #d1d5db;color:#374151}
+  button:disabled{opacity:.5;cursor:default}
+  .stats{display:flex;flex-wrap:wrap;gap:12px;margin:14px 0}
+  .stat{flex:1;min-width:140px;background:#f9fafb;border:1px solid #e5e7eb;border-radius:10px;padding:10px 14px}
+  .stat .k{font-size:13px;color:#6b7280}
+  .stat .v{font-size:22px;font-weight:800}
+  canvas.chart{width:100%;height:260px;border:1px solid #e5e7eb;border-radius:10px;background:#fff}
+  canvas.map{border:1px solid #e5e7eb;border-radius:10px;background:#fff}
+  .mapwrap{display:flex;flex-wrap:wrap;gap:18px;align-items:flex-start}
+  .legend{font-size:13px;color:#4b5563}
+  .legend .sw{display:inline-block;width:12px;height:12px;border-radius:3px;vertical-align:-1px;margin:0 4px 0 10px}
+  code{background:#f3f4f6;border-radius:6px;padding:1px 6px;font-size:13px}
+  .formula{background:#f9fafb;border-left:4px solid #f59e0b;padding:10px 14px;margin:10px 0;font-size:14px;overflow-x:auto}
+  .trace{font-size:15px}
+  .trace b{font-variant-numeric:tabular-nums}
+  footer{color:#6b7280;font-size:13px;text-align:center;padding:0 20px 40px}
+  .note{background:#fffbeb;border:1px solid #fde68a;border-radius:10px;padding:10px 14px;font-size:14px}
+  #netSvg{width:100%;height:auto;display:block}
+  @media (max-width:640px){header h1{font-size:21px}}
+</style>
+</head>
+<body>
+<header>
+  <div class="wrap">
+    <span class="tag">第二次作业 · 第二篇 15 节</span>
+    <h1>MLP 学习参数的实现与可视化<br>——外卖议事厅 · 学习篇</h1>
+    <p>网络结构：2 个输入（饥饿程度、价格贵的程度）→ 3 个隐藏神经元（ReLU）→ 1 个输出（Sigmoid 点外卖概率）。</p>
+    <p>与飞行游戏不同：这里的权重和偏置不是写死的，而是用反向传播从 12 条带标签的“点外卖”记录里学出来的。</p>
+  </div>
+</header>
+<main>
+
+<section id="sec-model">
+  <h2>1 · 网络与训练数据</h2>
+  <p class="sub">沿用飞行游戏的比喻：三位朋友（省钱派、纠结派、怕饿派）就是三个隐藏神经元；每位朋友“在意饥饿和价格的程度”是输入到隐藏层的权重，“原本就有的倾向”是偏置；群聊里的发言分量是隐藏层到输出层的权重。</p>
+  <svg id="netSvg" viewBox="0 0 860 250" role="img" aria-label="MLP 网络结构图"></svg>
+  <h3>训练数据（12 条历史决定）</h3>
+  <p class="sub">标注规则：<code>2 × 饥饿程度 − 价格贵的程度 &gt; 0.8</code> 则点外卖（标签 1），否则不点（标签 0）。数据是按这条规则编的教学样本，不是真实统计。</p>
+  <table id="dataTable">
+    <thead><tr><th>#</th><th>饥饿程度 x₁</th><th>价格贵的程度 x₂</th><th>标签 y</th><th>含义</th></tr></thead>
+    <tbody></tbody>
+  </table>
+  <h3>参数起点</h3>
+  <p class="sub">随机初始化用固定种子（30），每次打开页面起点相同，结果可复现；也可以一键载入飞行游戏的固定教学参数，对照它在同样数据上的表现。</p>
+  <div class="controls">
+    <button id="btnRandom">随机初始化（种子 30）</button>
+    <button id="btnPreset" class="secondary">载入飞行游戏参数</button>
+  </div>
+  <p id="paramSource" class="note">当前参数：随机初始化（种子 30），尚未训练。</p>
+</section>
+
+<section id="sec-train">
+  <h2>2 · 训练：反向传播 + 梯度下降</h2>
+  <p class="sub">全批量梯度下降：每轮用全部 12 条样本算一次平均梯度，再按 <code>参数 ← 参数 − 学习率 × 梯度</code> 更新。损失函数是二元交叉熵。</p>
+  <div class="controls">
+    <label>学习率 <span id="lrVal">0.50</span> <input type="range" id="lr" min="0.05" max="1" step="0.05" value="0.5"></label>
+    <label>目标轮数 <input type="number" id="targetEpochs" min="1" max="2000" value="300"></label>
+    <button id="btnStep">单步 +1 轮</button>
+    <button id="btnStep10" class="secondary">+10 轮</button>
+    <button id="btnRun">训练到目标轮数</button>
+    <button id="btnReset" class="ghost">重置</button>
+  </div>
+  <div class="stats">
+    <div class="stat"><div class="k">已训练轮数</div><div class="v" id="stEpoch">0</div></div>
+    <div class="stat"><div class="k">平均损失（交叉熵）</div><div class="v" id="stLoss">—</div></div>
+    <div class="stat"><div class="k">训练集准确率</div><div class="v" id="stAcc">—</div></div>
+    <div class="stat"><div class="k">样本 (0.80, 0.40) 的点外卖概率</div><div class="v" id="stSample">—</div></div>
+  </div>
+  <h3>损失曲线</h3>
+  <canvas id="lossChart" class="chart" width="860" height="260"></canvas>
+  <h3>准确率曲线</h3>
+  <canvas id="accChart" class="chart" width="860" height="260"></canvas>
+  <h3>关键轮次记录</h3>
+  <table id="ckptTable">
+    <thead><tr><th>轮数</th><th>平均损失</th><th>准确率</th></tr></thead>
+    <tbody><tr><td>0</td><td id="ck0loss">—</td><td id="ck0acc">—</td></tr></tbody>
+  </table>
+</section>
+
+<section id="sec-weights">
+  <h2>3 · 参数在学什么：权重与决策边界</h2>
+  <p class="sub">Δ 列是相对初始值的变化。训练后可以观察：哪位“朋友”变得更在意饥饿、哪位更在意价格，以及输出层更听谁的。</p>
+  <h3>当前参数（保留 3 位小数）</h3>
+  <table id="paramTable">
+    <thead><tr><th>参数</th><th>当前值</th><th>Δ（相对初始）</th><th>含义</th></tr></thead>
+    <tbody></tbody>
+  </table>
+  <h3>决策边界：预测概率热力图</h3>
+  <p class="sub">横轴是饥饿程度，纵轴是价格贵的程度，颜色是模型预测的点外卖概率。圆点是标签 1（点了），叉是标签 0（没点）；★ 是飞行游戏里的样本 (0.80, 0.40)。</p>
+  <div class="mapwrap">
+    <canvas id="heatMap" class="map" width="440" height="440"></canvas>
+    <div class="legend">
+      <p><span class="sw" style="background:#2563eb"></span>概率低（不点）<span class="sw" style="background:#f8fafc;border:1px solid #cbd5e1"></span>约 50%（边界）<span class="sw" style="background:#ea580c"></span>概率高（点）</p>
+      <p>● 标签 1：点了外卖<br>✕ 标签 0：没点外卖<br>★ 样本 (0.80, 0.40)</p>
+      <p id="heatNote">训练前，边界是随机的；训练后，边界应把圆点和叉基本分开。</p>
+    </div>
+  </div>
+  <h3>单样本前向追踪：(0.80, 0.40)</h3>
+  <p class="sub">用当前参数逐步算一遍，和飞行游戏固定参数的结果对照（固定参数算出约 77.2%）。</p>
+  <div class="trace" id="traceBox"></div>
+</section>
+
+<section id="sec-math">
+  <h2>4 · 实现用到的公式</h2>
+  <p class="sub">下面就是页面里实际跑的代码逻辑（前向、损失、反向、更新），可直接对照浏览器里的脚本查看。</p>
+  <div class="formula">
+    前向：z<sub>j</sub> = x₁·W<sup>(1)</sup><sub>j1</sub> + x₂·W<sup>(1)</sup><sub>j2</sub> + b<sup>(1)</sup><sub>j</sub>，h<sub>j</sub> = ReLU(z<sub>j</sub>) = max(0, z<sub>j</sub>)<br>
+    输出：z = Σ<sub>j</sub> h<sub>j</sub>·W<sup>(2)</sup><sub>j</sub> + b<sup>(2)</sup>，ŷ = σ(z) = 1 / (1 + e<sup>−z</sup>)
+  </div>
+  <div class="formula">
+    损失（二元交叉熵，N = 12）：L = −(1/N) Σ [ y·ln ŷ + (1−y)·ln(1−ŷ) ]
+  </div>
+  <div class="formula">
+    反向（对第 i 条样本，δ = ŷ − y）：<br>
+    ∂L/∂W<sup>(2)</sup><sub>j</sub> = δ·h<sub>j</sub>，∂L/∂b<sup>(2)</sup> = δ<br>
+    ∂L/∂z<sub>j</sub> = δ·W<sup>(2)</sup><sub>j</sub>·𝟙[z<sub>j</sub> &gt; 0]，∂L/∂W<sup>(1)</sup><sub>ji</sub> = ∂L/∂z<sub>j</sub>·x<sub>i</sub>，∂L/∂b<sup>(1)</sup><sub>j</sub> = ∂L/∂z<sub>j</sub><br>
+    更新：W ← W − 学习率 × 平均梯度（偏置同理）
+  </div>
+  <p class="note">注意：ReLU 在 z ≤ 0 时导数为 0，该神经元本轮收不到梯度——这就是训练中“死神经元”的来源。本页的随机种子（30）选得让三个神经元初始时都在全部 12 条样本上活跃，训练 300 轮后仍各在 10–11 条样本上活跃，所以三个“朋友”都参与了学习。</p>
+</section>
+</main>
+<footer>
+  第二次作业 · 第二篇 15 节：MLP 学习参数的实现与可视化 —— 结构与教学参数参考 mlp-flight（外卖议事厅飞行游戏）；训练全程在浏览器本地运行，不上传数据。
+</footer>
+<script>
+// ---------- 纯计算部分（不依赖 DOM，可在 Node 里直接测试） ----------
+const DATA = [
+  [0.90,0.20,1],[0.80,0.40,1],[0.90,0.80,1],[0.80,0.90,0],
+  [0.50,0.20,0],[0.60,0.30,1],[0.50,0.50,0],[0.30,0.20,0],
+  [0.20,0.80,0],[0.70,0.20,1],[0.40,0.90,0],[0.60,0.70,0]
+];
+const PRESET = { W1:[[0.50,-1.00],[0.30,-0.50],[1.50,-0.25]], b1:[-0.10,0.10,0.10], W2:[0.80,0.70,1.00], b2:-0.08 };
+const NAMES = ['省钱派','纠结派','怕饿派'];
+function mulberry32(a){return function(){a|=0;a=a+0x6D2B79F5|0;let t=Math.imul(a^a>>>15,1|a);t=t+Math.imul(t^t>>>7,61|t)^t;return((t^t>>>14)>>>0)/4294967296;};}
+function sigmoid(z){return 1/(1+Math.exp(-z));}
+function cloneParams(p){return {W1:p.W1.map(r=>r.slice()),b1:p.b1.slice(),W2:p.W2.slice(),b2:p.b2};}
+function randomParams(seed){
+  const rnd=mulberry32(seed);
+  const W1=[],b1=[],W2=[];
+  for(let j=0;j<3;j++){W1.push([rnd()-0.5,rnd()-0.5]);b1.push(rnd()-0.5);W2.push(rnd()-0.5);}
+  return {W1,b1,W2,b2:rnd()-0.5};
+}
+function forward(p,x){
+  const z1=[],h=[];
+  for(let j=0;j<3;j++){const z=x[0]*p.W1[j][0]+x[1]*p.W1[j][1]+p.b1[j];z1.push(z);h.push(Math.max(0,z));}
+  let z2=p.b2; for(let j=0;j<3;j++) z2+=h[j]*p.W2[j];
+  return {z1,h,z2,y:sigmoid(z2)};
+}
+function lossAndGrads(p){
+  const gW1=[[0,0],[0,0],[0,0]],gb1=[0,0,0],gW2=[0,0,0];
+  let gb2=0,loss=0,correct=0;
+  for(const s of DATA){
+    const x=[s[0],s[1]],y=s[2];
+    const f=forward(p,x);
+    const yh=Math.min(Math.max(f.y,1e-9),1-1e-9);
+    loss+=-(y*Math.log(yh)+(1-y)*Math.log(1-yh));
+    if((f.y>=0.5?1:0)===y) correct++;
+    const d=f.y-y;
+    gb2+=d;
+    for(let j=0;j<3;j++){
+      gW2[j]+=d*f.h[j];
+      const dz=d*p.W2[j]*(f.z1[j]>0?1:0);
+      gW1[j][0]+=dz*x[0]; gW1[j][1]+=dz*x[1]; gb1[j]+=dz;
+    }
+  }
+  const n=DATA.length;
+  loss/=n; gb2/=n;
+  for(let j=0;j<3;j++){gW2[j]/=n; gb1[j]/=n; gW1[j][0]/=n; gW1[j][1]/=n;}
+  return {loss,acc:correct/n,gW1,gb1,gW2,gb2};
+}
+function trainEpoch(p,lr){
+  const g=lossAndGrads(p);
+  for(let j=0;j<3;j++){p.W1[j][0]-=lr*g.gW1[j][0]; p.W1[j][1]-=lr*g.gW1[j][1]; p.b1[j]-=lr*g.gb1[j]; p.W2[j]-=lr*g.gW2[j];}
+  p.b2-=lr*g.gb2;
+  return g;
+}
+if(typeof module!=='undefined'){module.exports={DATA,PRESET,forward,lossAndGrads,trainEpoch,randomParams,cloneParams,sigmoid};}
+</script>
+<script>
+// ---------- 页面交互 ----------
+if(typeof document!=='undefined'){
+const $=id=>document.getElementById(id);
+const fmt=v=>(v>=0?'+':'')+v.toFixed(3);
+const pct=v=>(v*100).toFixed(1)+'%';
+let params=randomParams(30), init=cloneParams(params), epoch=0;
+let histLoss=[], histAcc=[], ckpts=new Set([0]);
+function current(){return lossAndGrads(params);}
+function refresh(){
+  const m=current();
+  $('stEpoch').textContent=epoch;
+  $('stLoss').textContent=m.loss.toFixed(4);
+  $('stAcc').textContent=pct(m.acc);
+  $('stSample').textContent=pct(forward(params,[0.80,0.40]).y);
+  if(epoch===0){$('ck0loss').textContent=m.loss.toFixed(4);$('ck0acc').textContent=pct(m.acc);}
+  drawCharts(); drawHeat(); drawParams(); drawNet(); drawTrace(); drawCkpts();
+}
+function drawCkpts(){
+  const tb=document.querySelector('#ckptTable tbody');
+  const rows=[[0,histLoss[0],histAcc[0]]];
+  for(const e of [10,50,100,200,300]){if(epoch>=e&&histLoss[e]!=null)rows.push([e,histLoss[e],histAcc[e]]);}
+  if(epoch>0&&![0,10,50,100,200,300].includes(epoch))rows.push([epoch,histLoss[epoch],histAcc[epoch]]);
+  tb.innerHTML=rows.map(r=>'<tr><td>'+r[0]+'</td><td>'+r[1].toFixed(4)+'</td><td>'+pct(r[2])+'</td></tr>').join('');
+}
+function lineChart(cv,vals,ymax,fmtY){
+  const ctx=cv.getContext('2d'),W=cv.width,H=cv.height;
+  ctx.clearRect(0,0,W,H);
+  ctx.strokeStyle='#e5e7eb';ctx.fillStyle='#6b7280';ctx.font='12px sans-serif';
+  for(let i=0;i<=4;i++){const y=8+(H-36)*i/4;ctx.beginPath();ctx.moveTo(44,y);ctx.lineTo(W-8,y);ctx.stroke();
+    ctx.fillText(fmtY(ymax*(1-i/4)),4,y+4);}
+  ctx.fillText('轮数 →',W-70,H-6);
+  if(vals.length<2)return;
+  const xmax=Math.max(10,vals.length-1);
+  ctx.strokeStyle='#ea580c';ctx.lineWidth=2;ctx.beginPath();
+  vals.forEach((v,i)=>{const x=44+(W-56)*i/xmax,y=8+(H-36)*(1-Math.min(v,ymax)/ymax);i?ctx.lineTo(x,y):ctx.moveTo(x,y);});
+  ctx.stroke();
+  const last=vals[vals.length-1];
+  ctx.fillStyle='#1f2937';ctx.fillText(fmtY(last),44+(W-56)*(vals.length-1)/xmax-14,8+(H-36)*(1-Math.min(last,ymax)/ymax)-8);
+}
+function drawCharts(){
+  lineChart($('lossChart'),histLoss,Math.max(0.7,histLoss[0]||0.7),v=>v.toFixed(2));
+  lineChart($('accChart'),histAcc,1,v=>pct(v));
+}
+function heatColor(p){
+  if(p<0.5){const t=p/0.5;return 'rgb('+Math.round(37+218*t)+','+Math.round(99+156*t)+','+Math.round(235+20*t)+')';}
+  const t=(p-0.5)/0.5;return 'rgb('+Math.round(248-8*t)+','+Math.round(250-162*t)+','+Math.round(252-236*t)+')';
+}
+function drawHeat(){
+  const cv=$('heatMap'),ctx=cv.getContext('2d'),N=44,S=cv.width;
+  const cell=S/N;
+  for(let gy=0;gy<N;gy++)for(let gx=0;gx<N;gx++){
+    const x=(gx+0.5)/N, pr=1-(gy+0.5)/N;
+    ctx.fillStyle=heatColor(forward(params,[x,pr]).y);
+    ctx.fillRect(gx*cell,gy*cell,cell+1,cell+1);
+  }
+  ctx.strokeStyle='rgba(255,255,255,.9)';ctx.lineWidth=2;
+  ctx.beginPath();ctx.moveTo(S*0.5,0);ctx.lineTo(S*0.5,S);ctx.moveTo(0,S*0.5);ctx.lineTo(S,0);ctx.stroke();
+  ctx.font='12px sans-serif';ctx.fillStyle='#1f2937';
+  ctx.fillText('饥饿 →',S-52,S-8);ctx.fillText('价格 ↑',6,14);
+  for(const s of DATA){
+    const x=s[0]*S,y=(1-s[1])*S;
+    if(s[2]===1){ctx.beginPath();ctx.arc(x,y,7,0,7);ctx.fillStyle='#047857';ctx.fill();ctx.strokeStyle='#fff';ctx.lineWidth=2;ctx.stroke();}
+    else{ctx.strokeStyle='#1f2937';ctx.lineWidth=3;ctx.beginPath();ctx.moveTo(x-6,y-6);ctx.lineTo(x+6,y+6);ctx.moveTo(x+6,y-6);ctx.lineTo(x-6,y+6);ctx.stroke();}
+  }
+  const sx=0.8*S,sy=(1-0.4)*S;
+  ctx.fillStyle='#f59e0b';ctx.strokeStyle='#1f2937';ctx.lineWidth=2;
+  ctx.beginPath();ctx.moveTo(sx,sy-11);ctx.lineTo(sx+10,sy+8);ctx.lineTo(sx-10,sy+8);ctx.closePath();ctx.fill();ctx.stroke();
+}
+function drawParams(){
+  const rows=[];
+  const add=(name,v,d,mean)=>rows.push('<tr><td>'+name+'</td><td>'+v.toFixed(3)+'</td><td class="'+(d>=0?'pos':'neg')+'">'+fmt(d)+'</td><td>'+mean+'</td></tr>');
+  for(let j=0;j<3;j++){
+    add('W<sup>(1)</sup><sub>'+(j+1)+'1</sub>（'+NAMES[j]+'×饥饿）',params.W1[j][0],params.W1[j][0]-init.W1[j][0],'在意饥饿的程度');
+    add('W<sup>(1)</sup><sub>'+(j+1)+'2</sub>（'+NAMES[j]+'×价格）',params.W1[j][1],params.W1[j][1]-init.W1[j][1],'在意价格的程度');
+    add('b<sup>(1)</sup><sub>'+(j+1)+'</sub>（'+NAMES[j]+'的倾向）',params.b1[j],params.b1[j]-init.b1[j],'原本就有的倾向');
+  }
+  for(let j=0;j<3;j++)add('W<sup>(2)</sup><sub>'+(j+1)+'</sub>（'+NAMES[j]+'的发言分量）',params.W2[j],params.W2[j]-init.W2[j],'群聊中的分量');
+  add('b<sup>(2)</sup>（汇总偏置）',params.b2,params.b2-init.b2,'汇总时的倾向');
+  document.querySelector('#paramTable tbody').innerHTML=rows.join('');
+}
+function drawNet(){
+  const svg=$('netSvg');
+  const xs=[90,430,760],ys={in:[70,180],hid:[45,125,205],out:[125]};
+  const f=forward(params,[0.80,0.40]);
+  let s='<rect x="0" y="0" width="860" height="250" rx="12" fill="#f9fafb"/>';
+  const edges=[];
+  for(let j=0;j<3;j++){
+    edges.push([xs[0],ys.in[0],xs[1],ys.hid[j],params.W1[j][0]]);
+    edges.push([xs[0],ys.in[1],xs[1],ys.hid[j],params.W1[j][1]]);
+    edges.push([xs[1],ys.hid[j],xs[2],ys.out[0],params.W2[j]]);
+  }
+  for(const e of edges){
+    s+='<line x1="'+e[0]+'" y1="'+e[1]+'" x2="'+e[2]+'" y2="'+e[3]+'" stroke="'+(e[4]>=0?'#059669':'#dc2626')+'" stroke-width="'+(1+Math.min(4,Math.abs(e[4])))+'" opacity="0.55"/>';
+    s+='<text x="'+((e[0]+e[2])/2)+'" y="'+((e[1]+e[3])/2-4)+'" font-size="11" fill="#374151" text-anchor="middle">'+e[4].toFixed(2)+'</text>';
+  }
+  const node=(x,y,r,fill,label,sub)=>'<circle cx="'+x+'" cy="'+y+'" r="'+r+'" fill="'+fill+'" stroke="#1f2937" stroke-width="1.5"/><text x="'+x+'" y="'+(y- r -6)+'" font-size="13" font-weight="700" fill="#1f2937" text-anchor="middle">'+label+'</text><text x="'+x+'" y="'+(y+r+16)+'" font-size="11" fill="#4b5563" text-anchor="middle">'+sub+'</text>';
+  s+=node(xs[0],ys.in[0],26,'#dbeafe','饥饿 x₁','0.80');
+  s+=node(xs[0],ys.in[1],26,'#dbeafe','价格 x₂','0.40');
+  for(let j=0;j<3;j++)s+=node(xs[1],ys.hid[j],26,'#fef3c7',NAMES[j],'h'+(j+1)+' = '+f.h[j].toFixed(2));
+  s+=node(xs[2],ys.out[0],30,'#dcfce7','点外卖','p = '+pct(f.y));
+  svg.innerHTML=s;
+}
+function drawTrace(){
+  const f=forward(params,[0.80,0.40]);
+  let h='<p>输入：饥饿 0.80，价格 0.40</p><p>';
+  for(let j=0;j<3;j++){
+    h+='<b>'+NAMES[j]+'</b>：z = 0.80×'+params.W1[j][0].toFixed(2)+' + 0.40×'+params.W1[j][1].toFixed(2)+' + '+params.b1[j].toFixed(2)+' = <b>'+f.z1[j].toFixed(3)+'</b>，ReLU 后 h = <b>'+f.h[j].toFixed(3)+'</b><br>';
+  }
+  h+='</p><p>汇总：z = '+f.h.map((v,j)=>v.toFixed(3)+'×'+params.W2[j].toFixed(2)).join(' + ')+' + '+params.b2.toFixed(2)+' = <b>'+f.z2.toFixed(3)+'</b>，σ(z) = <b>'+pct(f.y)+'</b></p>';
+  h+='<p class="note">对照：飞行游戏固定参数对这个样本算出 z = 1.218，σ(z) ≈ 77.2%。但它在 12 条训练数据上只有 41.7% 准确率（平均损失 0.719）——固定参数是为演示编的、没经过学习；而学出来的参数训练 300 轮后能达到 100% 准确率，这正是“学习参数”的意义。</p>';
+  $('traceBox').innerHTML=h;
+}
+function record(){const m=current();histLoss.push(m.loss);histAcc.push(m.acc);}
+function runEpochs(n){
+  const lr=parseFloat($('lr').value);
+  for(let i=0;i<n;i++){trainEpoch(params,lr);epoch++;record();}
+  refresh();
+}
+function reset(source){
+  if(source==='preset'){params=cloneParams(PRESET);$('paramSource').textContent='当前参数：飞行游戏固定教学参数（省钱派 W=[0.50,−1.00] b=−0.10；纠结派 W=[0.30,−0.50] b=0.10；怕饿派 W=[1.50,−0.25] b=0.10；输出 W=[0.80,0.70,1.00] b=−0.08）。可直接点“训练”接着学。';}
+  else{params=randomParams(30);$('paramSource').textContent='当前参数：随机初始化（种子 30），尚未训练。';}
+  init=cloneParams(params);epoch=0;histLoss=[];histAcc=[];
+  record();refresh();
+}
+$('lr').addEventListener('input',()=>{$('lrVal').textContent=parseFloat($('lr').value).toFixed(2);});
+$('btnStep').addEventListener('click',()=>runEpochs(1));
+$('btnStep10').addEventListener('click',()=>runEpochs(10));
+$('btnRun').addEventListener('click',()=>{
+  const target=parseInt($('targetEpochs').value,10)||300;
+  if(epoch>=target){alert('已达到 '+target+' 轮；想继续训练请把目标轮数调大。');return;}
+  runEpochs(target-epoch);
+});
+$('btnReset').addEventListener('click',()=>reset('random'));
+$('btnRandom').addEventListener('click',()=>reset('random'));
+$('btnPreset').addEventListener('click',()=>reset('preset'));
+const tb=document.querySelector('#dataTable tbody');
+tb.innerHTML=DATA.map((s,i)=>'<tr><td>'+(i+1)+'</td><td>'+s[0].toFixed(2)+'</td><td>'+s[1].toFixed(2)+'</td><td>'+(s[2]===1?'<span class="pos">1 · 点</span>':'<span class="neg">0 · 不点</span>')+'</td><td>'+(s[2]===1?'饿、便宜 → 点':'不饿或太贵 → 不点')+'</td></tr>').join('');
+record();refresh();
+}
+</script>
+</body>
+</html>
