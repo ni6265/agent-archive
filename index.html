@@ -1207,6 +1207,32 @@
   /* 公开展示的默认档案：所有访客首次打开都会看到这份数据 */
   var DEFAULT_AGENTS = [
     {
+      id: 'demo-mlp-learning',
+      name: 'MLP 学习参数 · 外卖议事厅学习篇',
+      category: '数据分析',
+      status: '正在使用',
+      started: '2026-11',
+      url: 'https://ni6265.github.io/agent-archive/mlp-learning/',
+      purpose: '第二次作业：MLP 学习参数的实现与可视化。手动反向传播 + 全批量梯度下降，12 条教学样本、损失与准确率曲线、权重变化表、决策边界热力图、单样本前向追踪。',
+      effect: '训练 300 轮后损失从 0.728 降到 0.084，准确率 100%；飞行游戏固定参数在同样数据上只有 41.7%。',
+      metric: '准确率 100%',
+      createdAt: '2026-11-19T05:00:00.000Z',
+      updatedAt: '2026-11-19T06:00:00.000Z'
+    },
+    {
+      id: 'demo-mlp-running',
+      name: '今天要不要去跑步 · MLP 演示',
+      category: '数据分析',
+      status: '正在使用',
+      started: '2026-11',
+      url: 'https://ni6265.github.io/agent-archive/mlp-running/',
+      purpose: '照外卖议事厅飞行游戏格式换的主题：2 输入、3 隐藏神经元、1 输出，算今天去不去跑步，滑杆实时算、逐步展示、决策热力图。',
+      effect: '默认输入（精神 0.70、闷热 0.30）去跑步概率 61.4%；精神满满加凉爽 71.5%，又累又闷热 30.4%。',
+      metric: '去跑步概率 61.4%',
+      createdAt: '2026-11-19T05:30:00.000Z',
+      updatedAt: '2026-11-19T06:00:00.000Z'
+    },
+    {
       id: 'agent-claude-code',
       name: 'Claude Code',
       category: '编程开发',
